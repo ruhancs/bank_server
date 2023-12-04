@@ -1,0 +1,53 @@
+package account_factory
+
+import (
+	account_usecase "bank_server/internal/account/application/usecase"
+	account_repository "bank_server/internal/account/infra/repository"
+	user_repository "bank_server/internal/user/infra/repository"
+	"bank_server/pkg/uow"
+	"bank_server/sql/db"
+	"context"
+	"database/sql"
+)
+
+func SetupUnitOfWork(ctx context.Context,database *sql.DB) *uow.Uow {
+	uow := uow.NewUow(ctx,database)
+	uow.Register("AccountRepository", func (tx *sql.Tx) interface{}  {
+		repo := account_repository.NewAccountRepository(database)
+		repo.Queries = db.New(tx)
+		return repo
+	})
+	uow.Register("EntryRepository", func (tx *sql.Tx) interface{}  {
+		repo := account_repository.NewEntryRepository(database)
+		repo.Queries = db.New(tx)
+		return repo
+	})
+	uow.Register("TransferRepository", func (tx *sql.Tx) interface{}  {
+		repo := account_repository.NewTransferRepository(database)
+		repo.Queries = db.New(tx)
+		return repo
+	})
+	return uow
+}
+
+func CreateAccountUseCase(db *sql.DB) *account_usecase.CreateAccountUseCase {
+	accountRepository := account_repository.NewAccountRepository(db)
+	userRepository := user_repository.NewUserRepository(db)
+	usecase := account_usecase.NewCreateAccountUseCase(accountRepository,userRepository)
+	return usecase
+}
+
+func CreditValueUseCase(unitOfWork uow.UowInterface) *account_usecase.CreditValueUseCase {
+	usecase := account_usecase.NewCreditValueUseCase(unitOfWork)
+	return usecase
+}
+
+func DebitValueUseCase(unitOfWork uow.UowInterface) *account_usecase.DebitValueUseCase {
+	usecase := account_usecase.NewDebitValueUseCase(unitOfWork)
+	return usecase
+}
+
+func TransferUseCase(unitOfWork uow.UowInterface) *account_usecase.TransferUseCase {
+	usecase := account_usecase.NewTransferUseCase(unitOfWork)
+	return usecase
+}
