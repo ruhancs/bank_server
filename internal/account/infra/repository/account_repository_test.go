@@ -32,7 +32,7 @@ func initRepositories() (
 	*account_repository.EntryRepository,
 	*account_repository.TransferRepository,
 ) {
-	err := godotenv.Load("../../../../.env")
+	err := godotenv.Load("../../../../.envexample")
 	if err != nil {
 		panic(err)
 	}
