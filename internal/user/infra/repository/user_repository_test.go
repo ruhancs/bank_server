@@ -21,7 +21,7 @@ func createUser() *entity.User{
 
 
 func initUserRepository() *user_repository.UserRepository {
-	err := godotenv.Load("../../../../.env")
+	err := godotenv.Load("../../../../.envexample")
 	if err != nil {
 		panic(err)
 	}
