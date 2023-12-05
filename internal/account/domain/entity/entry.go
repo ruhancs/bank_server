@@ -39,10 +39,10 @@ func NewEntry(accountID, transactionType string, amount int) (*Entry, error) {
 
 func (e *Entry) validate() error {
 	if e.AccountID == "" {
-		return errors.New("inavalid account id")
+		return errors.New("invalid account id")
 	}
 	if e.Amount <= 0 {
-		return errors.New("inavalid amount")
+		return errors.New("invalid amount")
 	}
 	return nil
 }
