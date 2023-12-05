@@ -5,7 +5,6 @@ import (
 	"net/mail"
 	"time"
 
-	//uuid "github.com/satori/go.uuid"
 )
 
 type User struct {

@@ -1,0 +1,291 @@
+basePath: /
+definitions:
+  dto_account.InputCreateAccountDto:
+    properties:
+      owner:
+        type: string
+    type: object
+  dto_account.InputCreditValueUseCase:
+    properties:
+      account_id:
+        type: string
+      value:
+        type: integer
+    type: object
+  dto_account.InputDebitValueUseCase:
+    properties:
+      account_id:
+        type: string
+      value:
+        type: integer
+    type: object
+  dto_account.InputTransferUseCase:
+    properties:
+      from_account:
+        type: string
+      to_account:
+        type: string
+      value:
+        type: integer
+    type: object
+  dto_account.OutputCreateAccountDto:
+    properties:
+      balance:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: string
+      owner:
+        type: string
+    type: object
+  dto_account.OutputCreditValueUseCase:
+    properties:
+      status:
+        type: string
+      value:
+        type: integer
+    type: object
+  dto_account.OutputDebitValueUseCase:
+    properties:
+      status:
+        type: string
+      value:
+        type: integer
+    type: object
+  dto_account.OutputTransferUseCase:
+    properties:
+      from_account:
+        type: string
+      status:
+        type: string
+      to_account:
+        type: string
+      value:
+        type: integer
+    type: object
+  user_dto.InputCreateUserDto:
+    properties:
+      email:
+        type: string
+      username:
+        type: string
+    type: object
+  user_dto.OutputCreateUserDto:
+    properties:
+      email:
+        type: string
+      username:
+        description: ID       string `json:"id"`
+        type: string
+    type: object
+  user_dto.OutputGetUserDto:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      username:
+        type: string
+    type: object
+  web.JsonResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact:
+    email: support@swagger.io
+    name: Ruhan CS
+    url: ruhancorreasoares@gmail.com
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Bank Server
+  version: "1.0"
+paths:
+  /account:
+    post:
+      consumes:
+      - application/json
+      description: create account
+      parameters:
+      - description: account request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto_account.InputCreateAccountDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto_account.OutputCreateAccountDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+      summary: Create account
+      tags:
+      - account
+  /account/credit:
+    post:
+      consumes:
+      - application/json
+      description: Credit value on account
+      parameters:
+      - description: account request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto_account.InputCreditValueUseCase'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto_account.OutputCreditValueUseCase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+      summary: Credit value
+      tags:
+      - account
+  /account/debit:
+    post:
+      consumes:
+      - application/json
+      description: Credit value on account
+      parameters:
+      - description: account request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto_account.InputDebitValueUseCase'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto_account.OutputDebitValueUseCase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+      summary: Credit value
+      tags:
+      - account
+  /account/transfer:
+    post:
+      consumes:
+      - application/json
+      description: Credit value on account
+      parameters:
+      - description: account request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto_account.InputTransferUseCase'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto_account.OutputTransferUseCase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+      summary: Credit value
+      tags:
+      - account
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: create user
+      parameters:
+      - description: user request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user_dto.InputCreateUserDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/user_dto.OutputCreateUserDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.JsonResponse'
+      summary: Create user
+      tags:
+      - users
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user
+      parameters:
+      - description: user id
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user_dto.OutputGetUserDto'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Get user
+      tags:
+      - users
+swagger: "2.0"

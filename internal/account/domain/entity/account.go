@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 type Account struct {
@@ -16,7 +16,7 @@ type Account struct {
 
 func NewAccount(owner string) (*Account,error) {
 	account := &Account{
-		ID: uuid.NewV4().String(),
+		ID: uuid.NewString(),
 		Owner: owner,
 		Balance: 0,
 		CreatedAt: time.Now(),

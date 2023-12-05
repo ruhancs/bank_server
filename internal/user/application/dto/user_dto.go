@@ -14,7 +14,7 @@ type OutputCreateUserDto struct {
 }
 
 type OutputGetUserDto struct {
-	UserName string `json:"username"`
-	Email    string `json:"email"`
+	UserName  string    `json:"username"`
+	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 }

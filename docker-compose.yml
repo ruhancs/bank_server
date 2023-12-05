@@ -1,0 +1,29 @@
+version: '3.0'
+
+services:
+  db:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=bank_server
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  goapp:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DB_DRIVER=postgres
+      - DB_SOURCE_DOCKER=postgresql://postgres:123456@db:5432/bank_server?sslmode=disable
+      - MIGRATE_URL=file://db/migration
+    depends_on:
+      db:
+        condition: service_healthy
