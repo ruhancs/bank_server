@@ -25,6 +25,9 @@ DELETE FROM accounts WHERE id = $1;
 -- name: CreateEntry :exec
 INSERT INTO entries (id,account_id,transaction_type,amount) VALUES ($1,$2,$3,$4);
 
+-- name: BulkCreateEntry :exec
+INSERT INTO entries (id,account_id,transaction_type,amount) values($1,$2,$3,$4),($5,$6,$7,$8);
+
 -- name: GetEntry :one
 SELECT * FROM entries WHERE id = $1 LIMIT 1;
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestCreateUserUseCase(t *testing.T) {
@@ -21,7 +22,10 @@ func TestCreateUserUseCase(t *testing.T) {
 	}
 	userMockRepo.EXPECT().Create(gomock.Any(),gomock.Any()).Return(nil)
 
-	createUserUsecase := user_usecase.NewCreateUserUseCase(userMockRepo)
+	logger,_ := zap.NewProduction()
+	defer logger.Sync()
+
+	createUserUsecase := user_usecase.NewCreateUserUseCase(userMockRepo,logger)
 	out, err := createUserUsecase.Execute(context.Background(),input)
 
 	assert.Nil(t, err)
@@ -39,7 +43,10 @@ func TestCreateUserUseCaseWithInvalidEmail(t *testing.T) {
 		Email:    "user",
 	}
 
-	createUserUsecase := user_usecase.NewCreateUserUseCase(userMockRepo)
+	logger,_ := zap.NewProduction()
+	defer logger.Sync()
+
+	createUserUsecase := user_usecase.NewCreateUserUseCase(userMockRepo,logger)
 	out, err := createUserUsecase.Execute(context.Background(),input)
 
 	assert.Nil(t, out)

@@ -11,6 +11,7 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 // @title           Bank Server
@@ -48,14 +49,17 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	createUserUseCase := user_factory.CreateUserUseCase(dbConn)
-	getUserUseCase := user_factory.GetUserUseCase(dbConn)
+	logger,_ := zap.NewProduction()
+	defer logger.Sync()
+
+	createUserUseCase := user_factory.CreateUserUseCase(dbConn,logger)
+	getUserUseCase := user_factory.GetUserUseCase(dbConn,logger)
 
 	unitOfWork := account_factory.SetupUnitOfWork(ctx,dbConn)
 	createAccountUseCase := account_factory.CreateAccountUseCase(dbConn)
-	creditValueUseCase := account_factory.CreditValueUseCase(unitOfWork)
-	debitValueUseCase := account_factory.DebitValueUseCase(unitOfWork)
-	transferUseCase := account_factory.TransferUseCase(unitOfWork)
+	creditValueUseCase := account_factory.CreditValueUseCase(unitOfWork,logger)
+	debitValueUseCase := account_factory.DebitValueUseCase(unitOfWork,logger)
+	transferUseCase := account_factory.TransferUseCase(unitOfWork,logger)
 
 	app := web.NewApplication(
 		createUserUseCase,

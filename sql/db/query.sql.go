@@ -9,6 +9,35 @@ import (
 	"context"
 )
 
+const bulkCreateEntry = `-- name: BulkCreateEntry :exec
+INSERT INTO entries (id,account_id,transaction_type,amount) values($1,$2,$3,$4),($5,$6,$7,$8)
+`
+
+type BulkCreateEntryParams struct {
+	ID                string
+	AccountID         string
+	TransactionType   string
+	Amount            int64
+	ID_2              string
+	AccountID_2       string
+	TransactionType_2 string
+	Amount_2          int64
+}
+
+func (q *Queries) BulkCreateEntry(ctx context.Context, arg BulkCreateEntryParams) error {
+	_, err := q.db.ExecContext(ctx, bulkCreateEntry,
+		arg.ID,
+		arg.AccountID,
+		arg.TransactionType,
+		arg.Amount,
+		arg.ID_2,
+		arg.AccountID_2,
+		arg.TransactionType_2,
+		arg.Amount_2,
+	)
+	return err
+}
+
 const createAccount = `-- name: CreateAccount :exec
 INSERT INTO accounts (id,owner,balance) VALUES ($1,$2,$3)
 `

@@ -8,6 +8,8 @@ import (
 	"bank_server/sql/db"
 	"context"
 	"database/sql"
+
+	"go.uber.org/zap"
 )
 
 func SetupUnitOfWork(ctx context.Context,database *sql.DB) *uow.Uow {
@@ -37,17 +39,17 @@ func CreateAccountUseCase(db *sql.DB) *account_usecase.CreateAccountUseCase {
 	return usecase
 }
 
-func CreditValueUseCase(unitOfWork uow.UowInterface) *account_usecase.CreditValueUseCase {
-	usecase := account_usecase.NewCreditValueUseCase(unitOfWork)
+func CreditValueUseCase(unitOfWork uow.UowInterface, logger *zap.Logger) *account_usecase.CreditValueUseCase {
+	usecase := account_usecase.NewCreditValueUseCase(unitOfWork,logger)
 	return usecase
 }
 
-func DebitValueUseCase(unitOfWork uow.UowInterface) *account_usecase.DebitValueUseCase {
-	usecase := account_usecase.NewDebitValueUseCase(unitOfWork)
+func DebitValueUseCase(unitOfWork uow.UowInterface, logger *zap.Logger) *account_usecase.DebitValueUseCase {
+	usecase := account_usecase.NewDebitValueUseCase(unitOfWork,logger)
 	return usecase
 }
 
-func TransferUseCase(unitOfWork uow.UowInterface) *account_usecase.TransferUseCase {
-	usecase := account_usecase.NewTransferUseCase(unitOfWork)
+func TransferUseCase(unitOfWork uow.UowInterface,logger *zap.Logger) *account_usecase.TransferUseCase {
+	usecase := account_usecase.NewTransferUseCase(unitOfWork,logger)
 	return usecase
 }

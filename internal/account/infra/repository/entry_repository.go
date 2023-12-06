@@ -34,6 +34,24 @@ func (r *EntryRepository) Create(ctx context.Context, entry *account_entity.Entr
 	return nil
 }
 
+func (r *EntryRepository) BulkCreate(ctx context.Context, fromEntry *account_entity.Entry, toEntry *account_entity.Entry) error {
+	err := r.Queries.BulkCreateEntry(ctx,db.BulkCreateEntryParams{
+		ID: fromEntry.ID,
+		AccountID: fromEntry.AccountID,
+		TransactionType: fromEntry.TransactionType,
+		Amount: int64(fromEntry.Amount),
+		ID_2: toEntry.ID,
+		AccountID_2: toEntry.AccountID,
+		TransactionType_2: toEntry.TransactionType,
+		Amount_2: int64(toEntry.Amount),
+	})
+	if err != nil {
+		return errors.New("failed to create entry")
+	}
+
+	return nil
+}
+
 func (r *EntryRepository) List(ctx context.Context, accountID string, perPage int, page int) ([]account_entity.Entry, error) {
 	offset := (page - 1) * perPage
 	entriesModel,err := r.Queries.ListEntry(ctx,db.ListEntryParams{

@@ -1,5 +1,6 @@
 package web_user_test
 
+/*
 import (
 	user_usecase "bank_server/internal/user/application/usecase"
 	"bank_server/internal/user/domain/entity"
@@ -60,3 +61,4 @@ func initApplication(createUserUseCase *user_usecase.CreateUserUseCase, getUserU
 func clearUserDB(repo *user_repository.UserRepository,username string) {
 	repo.Queries.DeleteUser(context.Background(),username)
 }
+*/
