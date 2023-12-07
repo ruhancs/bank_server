@@ -7,12 +7,60 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
+
+var (
+	transferErrorsGetFromAccount = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "transfer_errors_get_from_account",
+		Help: "Error in method in repository GetToUpdate with from account",
+	})
+	transferErrorsGetToAccount = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "transfer_errors_get_to_account",
+		Help: "Error in method in repository GetToUpdate with to account",
+	})
+	transferErrorsUpdateFromAccountBalance = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "transfer_errors_update_from_account_balance",
+		Help: "Error in method in repository UpdateBalance with from account",
+	})
+	transferErrorsUpdateToAccountBalance = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "transfer_errors_update_to_account_balance",
+		Help: "Error in method in repository UpdateBalance with to account",
+	})
+	transferErrorsCreateEntries = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "transfer_errors_create_entries",
+		Help: "Error in method from entry repository BulkCreate",
+	})
+	transferErrorsCreateTransfer = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "transfer_errors_create_transfer",
+		Help: "Error in method from transfer repository Create",
+	})
+	transferHandlerErrors = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "transfer_handler_errors",
+		Help: "Errors in handler transfer",
+	})
+)
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .Env file")
+	}
+	prometheus.MustRegister(transferErrorsGetFromAccount)
+	prometheus.MustRegister(transferErrorsGetToAccount)
+	prometheus.MustRegister(transferErrorsUpdateFromAccountBalance)
+	prometheus.MustRegister(transferErrorsUpdateToAccountBalance)
+	prometheus.MustRegister(transferErrorsCreateEntries)
+	prometheus.MustRegister(transferErrorsCreateTransfer)
+	prometheus.MustRegister(transferHandlerErrors)
+}
 
 // @title           Bank Server
 // @version         1.0
@@ -30,15 +78,9 @@ import (
 // @BasePath  /
 
 func main() {
-	
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
-	
 	ctx := context.Background()
-	//dbConn, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_SOURCE_DOCKER"))
-	dbConn, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_SOURCE"))
+	dbConn, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_SOURCE_DOCKER"))
+	//dbConn, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_SOURCE"))
 	if err != nil {
 		panic(err)
 	}
@@ -59,9 +101,19 @@ func main() {
 	createAccountUseCase := account_factory.CreateAccountUseCase(dbConn)
 	creditValueUseCase := account_factory.CreditValueUseCase(unitOfWork,logger)
 	debitValueUseCase := account_factory.DebitValueUseCase(unitOfWork,logger)
-	transferUseCase := account_factory.TransferUseCase(unitOfWork,logger)
+	transferUseCase := account_factory.TransferUseCase(
+		transferErrorsGetFromAccount,
+		transferErrorsGetToAccount,
+		transferErrorsUpdateFromAccountBalance,
+		transferErrorsUpdateToAccountBalance,
+		transferErrorsCreateEntries,
+		transferErrorsCreateTransfer,
+		unitOfWork,
+		logger,
+	)
 
 	app := web.NewApplication(
+		transferHandlerErrors,
 		createUserUseCase,
 		getUserUseCase,
 		createAccountUseCase,
@@ -69,6 +121,12 @@ func main() {
 		debitValueUseCase,
 		transferUseCase,
 	)
+
+	http.Handle("/metrics", promhttp.Handler())
+	go func ()  {
+		log.Println("Running metrics")
+		http.ListenAndServe(":8080", nil)
+	}()
 
 	app.Server()
 }

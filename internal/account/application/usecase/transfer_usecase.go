@@ -10,16 +10,38 @@ import (
 	"log"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 )
 
 type TransferUseCase struct {
+	transferErrorsGetFromAccount prometheus.Counter
+	transferErrorsGetToAccount prometheus.Counter
+	transferErrorsUpdateFromAccountBalance prometheus.Counter
+	transferErrorsUpdateToAccountBalance prometheus.Counter
+	transferErrorsCreateEntries prometheus.Counter
+	transferErrorsCreateTransfer prometheus.Counter
 	Logger     *zap.Logger
 	UnitOfWork uow.UowInterface
 }
 
-func NewTransferUseCase(unitOfWork uow.UowInterface, logger *zap.Logger) *TransferUseCase {
+func NewTransferUseCase(
+	transferErrorsGetFromAccount prometheus.Counter,
+	transferErrorsGetToAccount prometheus.Counter,
+	transferErrorsUpdateFromAccountBalance prometheus.Counter,
+	transferErrorsUpdateToAccountBalance prometheus.Counter,
+	transferErrorsCreateEntries prometheus.Counter,
+	transferErrorsCreateTransfer prometheus.Counter,
+	unitOfWork uow.UowInterface, 
+	logger *zap.Logger,
+) *TransferUseCase {
 	return &TransferUseCase{
+		transferErrorsGetFromAccount: transferErrorsGetFromAccount,
+		transferErrorsGetToAccount: transferErrorsGetToAccount,
+		transferErrorsUpdateFromAccountBalance: transferErrorsUpdateFromAccountBalance,
+		transferErrorsUpdateToAccountBalance: transferErrorsUpdateToAccountBalance,
+		transferErrorsCreateEntries: transferErrorsCreateEntries,
+		transferErrorsCreateTransfer: transferErrorsCreateTransfer,
 		Logger:     logger,
 		UnitOfWork: unitOfWork,
 	}
@@ -33,6 +55,7 @@ func (u *TransferUseCase) Execute(ctx context.Context, input dto_account.InputTr
 
 		fromAccount, err := accountRepo.GetToUpdate(ctx, input.FromAccountID)
 		if err != nil {
+			u.transferErrorsGetFromAccount.Inc()
 			t := time.Now().Format(time.RFC3339)
 			u.Logger.Error("Error to get from account transfer to update",
 				zap.String("action", "TransferUseCase.Execute"),
@@ -46,6 +69,7 @@ func (u *TransferUseCase) Execute(ctx context.Context, input dto_account.InputTr
 
 		toAccount, err := accountRepo.GetToUpdate(ctx, input.ToAccountID)
 		if err != nil {
+			u.transferErrorsGetToAccount.Inc()
 			t := time.Now().Format(time.RFC3339)
 			u.Logger.Error("Error to get to account transfer to update",
 				zap.String("action", "TransferUseCase.Execute"),
@@ -66,6 +90,7 @@ func (u *TransferUseCase) Execute(ctx context.Context, input dto_account.InputTr
 		//refactor to bulkupdate
 		err = accountRepo.UpdateBalance(ctx, input.FromAccountID, fromAccount.Balance)
 		if err != nil {
+			u.transferErrorsUpdateFromAccountBalance.Inc()
 			t := time.Now().Format(time.RFC3339)
 			u.Logger.Error("Error to update balance in from account transfer",
 				zap.String("action", "TransferUseCase.Execute"),
@@ -78,6 +103,7 @@ func (u *TransferUseCase) Execute(ctx context.Context, input dto_account.InputTr
 		}
 		err = accountRepo.UpdateBalance(ctx, input.ToAccountID, toAccount.Balance)
 		if err != nil {
+			u.transferErrorsUpdateToAccountBalance.Inc()
 			t := time.Now().Format(time.RFC3339)
 			u.Logger.Error("Error to update balance in to account transfer",
 				zap.String("action", "TransferUseCase.Execute"),
@@ -116,6 +142,7 @@ func (u *TransferUseCase) Execute(ctx context.Context, input dto_account.InputTr
 
 		err = entryRepo.BulkCreate(ctx, entryFromAccount, entryToAccount)
 		if err != nil {
+			u.transferErrorsCreateEntries.Inc()
 			t := time.Now().Format(time.RFC3339)
 			u.Logger.Error("Error to bulk create entries on db",
 				zap.String("action", "TransferUseCase.Execute"),
@@ -141,6 +168,7 @@ func (u *TransferUseCase) Execute(ctx context.Context, input dto_account.InputTr
 		}
 		err = transferRepo.Create(ctx, transfer)
 		if err != nil {
+			u.transferErrorsCreateTransfer.Inc()
 			t := time.Now().Format(time.RFC3339)
 			u.Logger.Error("Error to save transfer on db",
 				zap.String("action", "TransferUseCase.Execute"),

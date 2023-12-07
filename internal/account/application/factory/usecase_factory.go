@@ -9,6 +9,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 )
 
@@ -49,7 +50,25 @@ func DebitValueUseCase(unitOfWork uow.UowInterface, logger *zap.Logger) *account
 	return usecase
 }
 
-func TransferUseCase(unitOfWork uow.UowInterface,logger *zap.Logger) *account_usecase.TransferUseCase {
-	usecase := account_usecase.NewTransferUseCase(unitOfWork,logger)
+func TransferUseCase(
+	transferErrorsGetFromAccount prometheus.Counter,
+	transferErrorsGetToAccount prometheus.Counter,
+	transferErrorsUpdateFromAccountBalance prometheus.Counter,
+	transferErrorsUpdateToAccountBalance prometheus.Counter,
+	transferErrorsCreateEntries prometheus.Counter,
+	transferErrorsCreateTransfer prometheus.Counter,
+	unitOfWork uow.UowInterface,
+	logger *zap.Logger,
+) *account_usecase.TransferUseCase {
+	usecase := account_usecase.NewTransferUseCase(
+		transferErrorsGetFromAccount,
+		transferErrorsGetToAccount,
+		transferErrorsUpdateFromAccountBalance,
+		transferErrorsUpdateToAccountBalance,
+		transferErrorsCreateEntries,
+		transferErrorsCreateTransfer,
+		unitOfWork,
+		logger,
+	)
 	return usecase
 }

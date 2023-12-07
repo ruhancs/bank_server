@@ -6,18 +6,22 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Application struct {
-	CreateUserUseCase    *user_usecase.CreateUserUseCase
-	GetUserUseCase       *user_usecase.GetUserUseCase
-	CreateAccountUseCase *account_usecase.CreateAccountUseCase
-	CreditValueUseCase   *account_usecase.CreditValueUseCase
-	DebitValueUseCase    *account_usecase.DebitValueUseCase
-	TransferUseCase      *account_usecase.TransferUseCase
+	TransferHandlerErrosObserver prometheus.Counter
+	CreateUserUseCase            *user_usecase.CreateUserUseCase
+	GetUserUseCase               *user_usecase.GetUserUseCase
+	CreateAccountUseCase         *account_usecase.CreateAccountUseCase
+	CreditValueUseCase           *account_usecase.CreditValueUseCase
+	DebitValueUseCase            *account_usecase.DebitValueUseCase
+	TransferUseCase              *account_usecase.TransferUseCase
 }
 
 func NewApplication(
+	transferHandlerErrosObserver prometheus.Counter,
 	createUserUseCase *user_usecase.CreateUserUseCase,
 	getUserUseCase *user_usecase.GetUserUseCase,
 	createAccountUseCase *account_usecase.CreateAccountUseCase,
@@ -26,12 +30,13 @@ func NewApplication(
 	transferUseCase *account_usecase.TransferUseCase,
 ) *Application {
 	return &Application{
-		CreateUserUseCase:    createUserUseCase,
-		GetUserUseCase:       getUserUseCase,
-		CreateAccountUseCase: createAccountUseCase,
-		CreditValueUseCase:   creditValuetUseCase,
-		DebitValueUseCase:    debitValueUseCase,
-		TransferUseCase:      transferUseCase,
+		TransferHandlerErrosObserver: transferHandlerErrosObserver,
+		CreateUserUseCase:            createUserUseCase,
+		GetUserUseCase:               getUserUseCase,
+		CreateAccountUseCase:         createAccountUseCase,
+		CreditValueUseCase:           creditValuetUseCase,
+		DebitValueUseCase:            debitValueUseCase,
+		TransferUseCase:              transferUseCase,
 	}
 }
 

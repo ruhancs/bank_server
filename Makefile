@@ -22,7 +22,7 @@ test:
 doc:
 	swag init -g cmd/main.go
 
-start:
+up:
 	docker-compose up -d
 
-.PHONY: migrateup migratedown sqlc accountmock start doc
+.PHONY: migrateup migratedown sqlc accountmock up doc

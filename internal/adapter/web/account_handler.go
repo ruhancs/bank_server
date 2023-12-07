@@ -102,12 +102,14 @@ func (app *Application) TransferHandler(w http.ResponseWriter, r *http.Request) 
 	var inputDto dto_account.InputTransferUseCase
 	err := json.NewDecoder(r.Body).Decode(&inputDto)
 	if err != nil {
+		app.TransferHandlerErrosObserver.Inc()
 		app.errorJson(w, err, http.StatusBadRequest)
 		return
 	}
-
+	
 	out, err := app.TransferUseCase.Execute(r.Context(), inputDto)
 	if err != nil {
+		app.TransferHandlerErrosObserver.Inc()
 		app.errorJson(w, err, http.StatusInternalServerError)
 		return
 	}

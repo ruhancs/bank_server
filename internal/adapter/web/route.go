@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/cors"
 
 	_ "bank_server/docs" //docs do swagger
+
 	httpSwagger "github.com/swaggo/http-swagger" // rota do swagger
 )
 
