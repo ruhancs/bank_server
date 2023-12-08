@@ -15,7 +15,7 @@ services:
       timeout: 5s
       retries: 5
 
-  goapp:
+  app:
     build: .
     ports:
       - "8000:8000"
@@ -25,7 +25,6 @@ services:
     environment:
       - DB_DRIVER=postgres
       - DB_SOURCE_DOCKER=postgresql://postgres:123456@db:5432/bank_server?sslmode=disable
-      - MIGRATE_URL=file://db/migration
     depends_on:
       db:
         condition: service_healthy
