@@ -3,6 +3,7 @@ package account_factory
 import (
 	account_usecase "bank_server/internal/account/application/usecase"
 	account_repository "bank_server/internal/account/infra/repository"
+	email "bank_server/internal/adapter/mail"
 	user_repository "bank_server/internal/user/infra/repository"
 	"bank_server/pkg/uow"
 	"bank_server/sql/db"
@@ -40,8 +41,8 @@ func CreateAccountUseCase(db *sql.DB) *account_usecase.CreateAccountUseCase {
 	return usecase
 }
 
-func CreditValueUseCase(unitOfWork uow.UowInterface, logger *zap.Logger) *account_usecase.CreditValueUseCase {
-	usecase := account_usecase.NewCreditValueUseCase(unitOfWork,logger)
+func CreditValueUseCase(unitOfWork uow.UowInterface, logger *zap.Logger, sesMail *email.SeSMailSender) *account_usecase.CreditValueUseCase {
+	usecase := account_usecase.NewCreditValueUseCase(unitOfWork,logger,sesMail)
 	return usecase
 }
 

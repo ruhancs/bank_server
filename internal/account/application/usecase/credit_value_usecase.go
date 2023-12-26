@@ -4,6 +4,7 @@ import (
 	dto_account "bank_server/internal/account/application/dto"
 	account_entity "bank_server/internal/account/domain/entity"
 	gateway_account "bank_server/internal/account/domain/gateway"
+	email "bank_server/internal/adapter/mail"
 	"bank_server/pkg/uow"
 	"context"
 	"log"
@@ -15,12 +16,14 @@ import (
 type CreditValueUseCase struct {
 	Logger     *zap.Logger
 	UnitOfWork uow.UowInterface
+	SesMailSender *email.SeSMailSender
 }
 
-func NewCreditValueUseCase(unitOfWork uow.UowInterface, logger *zap.Logger) *CreditValueUseCase {
+func NewCreditValueUseCase(unitOfWork uow.UowInterface, logger *zap.Logger, sesMail *email.SeSMailSender) *CreditValueUseCase {
 	return &CreditValueUseCase{
 		Logger: logger,
 		UnitOfWork: unitOfWork,
+		SesMailSender: sesMail,
 	}
 }
 
@@ -92,11 +95,14 @@ func (u *CreditValueUseCase) Execute(ctx context.Context, input dto_account.Inpu
 		Value:  input.Value,
 	}
 
+	//enviar email de confirmacao
+	u.SesMailSender.Wait.Add(1)
+	go u.SesMailSender.SendInvoiceMail("ruhan_cs@hotmail.com", "Teste Body")
+
 	return output, nil
 }
 
 func (u *CreditValueUseCase) getAccountRepository(ctx context.Context) gateway_account.AccountRepositoryInterface {
-	log.Println("GET ACCOUNT REPO")
 	repo, err := u.UnitOfWork.GetRepository(ctx, "AccountRepository")
 	if err != nil {
 		log.Println("failed to get account repository")

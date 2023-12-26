@@ -2,6 +2,7 @@ package main
 
 import (
 	account_factory "bank_server/internal/account/application/factory"
+	email "bank_server/internal/adapter/mail"
 	"bank_server/internal/adapter/web"
 	user_factory "bank_server/internal/user/application/factory"
 	"context"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -79,8 +81,8 @@ func init() {
 
 func main() {
 	ctx := context.Background()
-	dbConn, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_SOURCE_DOCKER"))
-	//dbConn, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_SOURCE"))
+	//dbConn, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_SOURCE_DOCKER"))
+	dbConn, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_SOURCE"))
 	if err != nil {
 		panic(err)
 	}
@@ -94,12 +96,18 @@ func main() {
 	logger,_ := zap.NewProduction()
 	defer logger.Sync()
 
+	mailErrChan := make(chan error)
+	waitGroup := sync.WaitGroup{}
+	sesSession := email.CreateSession(os.Getenv("AWS_REGION"),os.Getenv("PK"),os.Getenv("SK"))
+	sesMail := email.NewSesMailSender(sesSession,&waitGroup,mailErrChan)
+	go sesMail.ListenForMail()
+
 	createUserUseCase := user_factory.CreateUserUseCase(dbConn,logger)
 	getUserUseCase := user_factory.GetUserUseCase(dbConn,logger)
 
 	unitOfWork := account_factory.SetupUnitOfWork(ctx,dbConn)
 	createAccountUseCase := account_factory.CreateAccountUseCase(dbConn)
-	creditValueUseCase := account_factory.CreditValueUseCase(unitOfWork,logger)
+	creditValueUseCase := account_factory.CreditValueUseCase(unitOfWork,logger,sesMail)
 	debitValueUseCase := account_factory.DebitValueUseCase(unitOfWork,logger)
 	transferUseCase := account_factory.TransferUseCase(
 		transferErrorsGetFromAccount,

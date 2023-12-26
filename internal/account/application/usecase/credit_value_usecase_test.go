@@ -5,7 +5,10 @@ import (
 	account_usecase "bank_server/internal/account/application/usecase"
 	mock_gateway_account "bank_server/internal/account/application/usecase/mock"
 	account_entity "bank_server/internal/account/domain/entity"
+	email "bank_server/internal/adapter/mail"
 	"context"
+	"os"
+	"sync"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -32,7 +35,12 @@ func TestCreditValueUseCase(t *testing.T) {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
 
-	creditValueUseCase := account_usecase.NewCreditValueUseCase(unitOfWorkMock, logger)
+	mailErrChan := make(chan error)
+	waitGroup := sync.WaitGroup{}
+	sesMail := email.CreateSession(os.Getenv("AWS_REGION"),os.Getenv("PK"),os.Getenv("SK"))
+	sesMailSender := email.NewSesMailSender(sesMail,&waitGroup,mailErrChan)
+
+	creditValueUseCase := account_usecase.NewCreditValueUseCase(unitOfWorkMock, logger,sesMailSender)
 	input := dto_account.InputCreditValueUseCase{
 		AccountID: account.ID,
 		Value:     20,
