@@ -8,6 +8,7 @@ import (
 	"bank_server/pkg/uow"
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"go.uber.org/zap"
@@ -97,7 +98,7 @@ func (u *CreditValueUseCase) Execute(ctx context.Context, input dto_account.Inpu
 
 	//enviar email de confirmacao
 	u.SesMailSender.Wait.Add(1)
-	go u.SesMailSender.SendInvoiceMail("ruhan_cs@hotmail.com", "Teste Body")
+	go u.SesMailSender.SendInvoiceMail(os.Getenv("EMAIL_TO_TESTE"), "Teste Body")
 
 	return output, nil
 }

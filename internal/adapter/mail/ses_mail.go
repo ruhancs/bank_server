@@ -1,11 +1,15 @@
 package email
 
 import (
+	"bytes"
+	"io"
 	"log"
 	"os"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"gopkg.in/gomail.v2"
+
 	//"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -86,8 +90,8 @@ func (s *SeSMailSender) sendMail(toAddres, htmlBody, textBody, subject string) e
 
 func (s *SeSMailSender) SendInvoiceMail(toAddress, textBody string) {
 	defer s.Wait.Done()
-	html := "<h1>Confirmaçao pagamento teste</h1>"
-	err := s.sendMail(toAddress, html, textBody, "confimaçao de pagamento")
+	html := "<p>Sua Nota fiscal esta no pdf em anexo</p>"
+	err := s.sendInvoicePDF(toAddress, html, textBody, "nota fiscal referente a compra")
 	if err != nil {
 		s.ErrorChan <- err
 	}
@@ -103,4 +107,44 @@ func(s *SeSMailSender) ListenForMail() {
 		//	return
 		}
 	}
+}
+
+func(s *SeSMailSender) sendInvoicePDF(toAddres, htmlBody, textBody, subject string) error {
+	source := aws.String(os.Getenv("EMAIL_SENDER"))
+	destination := []*string{&toAddres}
+
+	msg := gomail.NewMessage()
+	msg.SetHeader("From", os.Getenv("EMAIL_SENDER"))
+	msg.SetHeader("To", toAddres)
+	msg.SetHeader("Subject", subject)
+	msg.SetBody("text/html", htmlBody)
+
+	//substituir por bucket aws
+	data,err := os.ReadFile(os.Getenv("PDF_INVOICE_PATH"))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	msg.Attach("invoice.pdf", gomail.SetCopyFunc(func(w io.Writer) error {
+		_, err := w.Write(data)
+		log.Println(err)
+		return err
+	}))
+
+	var emailRaw bytes.Buffer
+	msg.WriteTo(&emailRaw)
+
+	message := &ses.SendRawEmailInput{
+		Source: source,
+		Destinations: destination,
+		RawMessage: &ses.RawMessage{
+			Data: emailRaw.Bytes(),
+		},
+	}
+	_,err = s.SES.SendRawEmail(message)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
 }
